@@ -109,7 +109,7 @@ install_virt_manager()
 remove_gnome_bloat()
 {
     info "Uninstalling bloatware."
-    if dnf remove -y gnome-maps gnome-tour gnome-weather gnome-boxes; then
+    if dnf remove -y gnome-maps gnome-tour gnome-weather gnome-boxes gnome-contacts; then
         info "Bloatware successfully uninstalled."
     else
         info "Error: failed to uninstall bloatware."
