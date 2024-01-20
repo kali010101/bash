@@ -7,7 +7,7 @@ info()
     echo -e "\e[1;4;32;40m${*}\e[0m"
 }
 
-URL_FLATHUB_REPO="https://flathub.org/repo/flathub.flatpakrepo"
+URL_FLATHUB_REPO="https://dl.flathub.org/repo/flathub.flatpakrepo"
 URL_RPMFUSION_FREE="https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm"
 URL_RPMFUSION_NONFREE="https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
 URL_MICRO="https://getmic.ro"
@@ -15,8 +15,8 @@ URL_MICRO="https://getmic.ro"
 check_for_root()
 {
 if [ "$EUID" -ne 0 ]; then
-    info "This script cannot run without root privileges.\nIt intends to configure the DNF package manager\nto enable parallel downloads and install\nthird party repositories, Google Chrome, VSCode\nand the Micro Texteditor. It will further\ninstall or update Python and Golang.\nIt will also update packages inbetween.\nIt is written to perform a quick setup\non a new installation of Fedora Linux Workstation.\nRun this script as root or contact your SysAdmin."
-    exit 1
+    info "This script cannot run without root privileges.\nIt intends to configure the DNF package manager\nto enable parallel downloads, add repositories\nfor Flathub and RPM Fusion (Free and Non-Free)\nand install Google Chrome, VSCode, Virt-Manager\nand the text editor Micro. It will further update\nor install Python and Golang and uninstall apps\nconsidered to be bloatware. Dependencies which\nmight become obsolete as a result of this will\nalso be deleted. Run this script as root or with\ntemporarily elevated privileges (superuser)."
+    exit 126
 fi
 }
 
@@ -36,14 +36,14 @@ install_flatpak()
 {
 if ! command -v flatpak &>/dev/null; then
     info "Flatpak is not installed. Installing..."
-    dnf install flatpak -y
+    dnf install -y flatpak
 fi
 }
 
 install_flathub_repos()
 {
     info "Installing Flathub repositories if not already installed."
-    flatpak remote-add --if-not-exists flathub $URL_FLATHUB_REPO
+    flatpak remote-add --if-not-exists flathub "$URL_FLATHUB_REPO"
 }
 
 install_rpmfusion_repos()
@@ -68,7 +68,7 @@ install_chrome()
 install_micro()
 {
     info "Installing Micro Texteditor."
-    curl $URL_MICRO | bash
+    curl "$URL_MICRO" | bash
     mv micro /usr/local/bin
 }
 
@@ -78,7 +78,7 @@ install_vsc()
     rpm --import https://packages.microsoft.com/keys/microsoft.asc
     sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
     dnf check-update
-    dnf install code -y
+    dnf install -y code
 }
 
 install_python()
@@ -87,7 +87,7 @@ if command -v python3 &>/dev/null; then
     info "Python is already installed."
 else
     info "Python not found. Installing..."
-    dnf install python3 -y
+    dnf install -y python3
 fi
 }
 
@@ -97,8 +97,25 @@ if command -v go &>/dev/null; then
     info "Golang is already installed."
 else
     info "Golang not found. Installing..."
-    dnf install golang -y
+    dnf install -y golang
 fi
+}
+
+install_virt_manager()
+{
+    dnf install -y virt-manager
+}
+
+remove_gnome_bloat()
+{
+    info "Uninstalling bloatware."
+    if dnf remove -y gnome-maps gnome-tour gnome-weather gnome-boxes; then
+        info "Bloatware successfully uninstalled."
+    else
+        info "Error: failed to uninstall bloatware."
+        exit 1
+    fi
+    dnf autoremove -y
 }
 
 main()
@@ -114,6 +131,8 @@ main()
     install_vsc
     install_python
     install_golang
+    install_virt_manager
+    remove_gnome_bloat
     update_packages
 }
 
