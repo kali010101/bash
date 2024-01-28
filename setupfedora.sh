@@ -28,8 +28,8 @@ configure_dnf()
         info "DNF is already configured for parallel downloads.\nConfiguration will be overwritten to enable 15 parallel downloads."
         sed -i '/^max_parallel_downloads=/c\max_parallel_downloads=15' $DNFCONFIG_PATH
     else
-    echo "max_parallel_downloads=15" | tee -a $DNFCONFIG_PATH >/dev/null
-    info "Configured DNF for 15 parallel downloads."
+        echo "max_parallel_downloads=15" | tee -a $DNFCONFIG_PATH >/dev/null
+        info "Configured DNF for 15 parallel downloads."
     fi
 }
 
@@ -99,24 +99,24 @@ install_vsc()
 
 install_python()
 {
-if ! command -v python3 >/dev/null; then
-    info "Python not found. Installing..."
-    if ! dnf install -y python3 >/dev/null; then
-        info "Python could not be installed."
+    if ! command -v python3 >/dev/null; then
+        info "Python not found. Installing..."
+        if ! dnf install -y python3 >/dev/null; then
+            info "Python could not be installed."
+        fi
+        info "Python has been installed successfully."
     fi
-    info "Python has been installed successfully."
-fi
 }
 
 install_golang()
 {
-if ! command -v go >/dev/null; then
-    info "Golang not found. Installing..."
-    if ! dnf install -y golang >/dev/null; then
-        info "Golang could not be installed."
+    if ! command -v go >/dev/null; then
+        info "Golang not found. Installing..."
+        if ! dnf install -y golang >/dev/null; then
+            info "Golang could not be installed."
+        fi
+        info "Golang has been installed successfully."
     fi
-    info "Golang has been installed successfully."
-fi
 }
 
 install_virt_manager()
@@ -133,7 +133,6 @@ remove_gnome_bloat()
     info "Uninstalling bloatware."
     if ! dnf remove -y gnome-maps gnome-tour gnome-weather gnome-boxes gnome-contacts >/dev/null; then
         info "Error: failed to uninstall bloatware."
-        exit 1
     fi
     dnf autoremove -y >/dev/null
     info "Bloatware has been uninstalled successfully."
